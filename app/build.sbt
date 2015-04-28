@@ -10,7 +10,9 @@ libraryDependencies ++= Seq(
   javaJdbc,
   javaEbean,
   cache,
-  javaWs
+  javaWs,
+  "org.apache.httpcomponents" % "fluent-hc" % "4.4.1",
+  "com.google.code.crawler-commons" % "crawler-commons" % "0.5"
 )
 
 
