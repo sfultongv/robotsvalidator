@@ -2,6 +2,7 @@ package controllers;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.fluent.Request;
 import crawlercommons.robots.BaseRobotRules;
 import crawlercommons.robots.SimpleRobotRulesParser;
@@ -17,23 +18,22 @@ public class Application extends Controller {
         return ok(index.render("Your new application is ready."));
     }
 
-    public static Result robots() {
-        String returnString;
-        String crawlerName = "googlebot";
-        String url = "http://dev.rwjf.velir.com/robots.txt";
-        try {
-            byte[] robotsContent = Request.Get(url)
-                .execute().returnContent().asBytes();
-            SimpleRobotRulesParser robotParser = new SimpleRobotRulesParser();
-            BaseRobotRules robotRules =
-                robotParser.parseContent(url, robotsContent, "text/plain", crawlerName);
-            String testUrl = "http://dev.rwjf.velir.com/content/rwjf/en.html";
-            returnString = String.format("A request to %s by agent %s is allowed: %b", testUrl, crawlerName, robotRules.isAllowed(testUrl));
+    public static Result robots(String site, String agent, String path) {
+        String returnString = "";
+        if (StringUtils.isNotBlank(site) && StringUtils.isNotBlank(agent) && StringUtils.isNotBlank(path)) {
+            try {
+                byte[] robotsContent = Request.Get(site)
+                    .execute().returnContent().asBytes();
+                SimpleRobotRulesParser robotParser = new SimpleRobotRulesParser();
+                BaseRobotRules robotRules =
+                    robotParser.parseContent(site, robotsContent, "text/plain", agent);
+                returnString = robotRules.isAllowed(path) ? "allowed" : "not allowed";
 
-        } catch (IOException e) {
-            returnString = e.toString();
+            } catch (IOException e) {
+                returnString = e.toString();
+            }
         }
 
-        return ok(robots.render(returnString));
+        return ok(robots.render(site, agent, path, returnString));
     }
 }

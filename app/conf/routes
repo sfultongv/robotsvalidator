@@ -9,4 +9,4 @@ GET     /                           controllers.Application.index()
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 
 
-GET     /robots                     controllers.Application.robots()
+GET     /robots                     controllers.Application.robots(site: String ?= null, agent: String ?= null, path: String ?= null)
