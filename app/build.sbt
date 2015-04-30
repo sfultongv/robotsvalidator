@@ -12,7 +12,9 @@ libraryDependencies ++= Seq(
   cache,
   javaWs,
   "org.apache.httpcomponents" % "fluent-hc" % "4.4.1",
-  "com.google.code.crawler-commons" % "crawler-commons" % "0.5"
+  "org.archive.heritrix" % "heritrix" % "3.2.0",
+  "commons-io" % "commons-io" % "2.4",
+  "com.google.guava" % "guava" % "18.0"
 )
 
 
