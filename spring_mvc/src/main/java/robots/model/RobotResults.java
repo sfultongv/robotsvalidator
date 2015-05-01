@@ -1,4 +1,4 @@
-package model;
+package robots.model;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -89,6 +89,10 @@ public class RobotResults {
 
 	public boolean hasError() {
 		return ! StringUtils.isBlank(errorString);
+	}
+
+	public boolean isError() {
+		return hasError();
 	}
 
 	public static RobotResults NO_RESULTS = new RobotResults();

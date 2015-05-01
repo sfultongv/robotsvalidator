@@ -1,0 +1,43 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.3.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'spring-boot'
+
+jar {
+    baseName = 'gs-serving-web-content'
+    version =  '0.1.0'
+}
+
+repositories {
+        mavenLocal()
+        maven { url "http://archiva.rwjf.velir.com:8080/archiva/repository/internal" }
+        maven { url "http://archiva.rwjf.velir.com:8080/archiva/repository/snapshots" }
+	maven { url "http://builds.archive.org/maven2/" }
+    mavenCentral()
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+	compile("org.apache.httpcomponents:fluent-hc:4.4.1")
+	compile("org.apache.commons:commons-lang3:3.4")
+	compile("org.archive.heritrix:heritrix:3.2.0")
+	compile("commons-io:commons-io:2.4")
+	compile("com.google.guava:guava:18.0")
+    testCompile("junit:junit")
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
+}

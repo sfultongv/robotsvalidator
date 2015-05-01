@@ -1,25 +1,29 @@
-package controllers;
+package robots;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.fluent.Request;
-import model.RobotResults;
-import play.mvc.Controller;
-import play.mvc.Result;
-import views.html.index;
-import views.html.robots;
+import robots.model.RobotResults;
+
+@Controller
+public class RobotsController {
 
 
-public class Application extends Controller {
-
-    public static Result index() {
-        return ok(index.render("Your new application is ready."));
-    }
-
-    public static Result robots(String site, String agent, String path) {
+    @RequestMapping("/robots")
+    public String robots
+        (@RequestParam(value="site", required=false) String site
+        ,@RequestParam(value="agent", required=false) String agent
+        ,@RequestParam(value="path", required=false) String path
+        ,Model model
+    ) { 
         RobotResults robotResults = RobotResults.NO_RESULTS;
         if (StringUtils.isNotBlank(site) && StringUtils.isNotBlank(agent) && StringUtils.isNotBlank(path)) {
             try {
@@ -37,6 +41,7 @@ public class Application extends Controller {
             }
         }
 
-        return ok(robots.render(robotResults));
+        model.addAttribute("result", robotResults);
+        return "robots";
     }
 }
