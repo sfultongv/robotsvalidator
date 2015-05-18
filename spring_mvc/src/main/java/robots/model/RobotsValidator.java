@@ -1,13 +1,15 @@
 package robots.model;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.StringUtils;
+import com.google.common.collect.Sets;
 
 /**
  * RobotsValidator -
@@ -15,48 +17,79 @@ import org.apache.commons.lang3.StringUtils;
  * @author Sam Griffin
  */
 public class RobotsValidator {
-	private String errorMessage;
-	private final static List<Pattern> VALID_PATTERNS = Lists.newArrayList(
-		// basic directives
-		Pattern.compile("^\\s*(#.*)?$"),                                //blank line
-		Pattern.compile("^user-agent:.*$", Pattern.CASE_INSENSITIVE),   //user agent
-		Pattern.compile("^disallow:.*$", Pattern.CASE_INSENSITIVE),     //disallow
-
-		// nonstandard extensions
-		Pattern.compile("^crawl-delay:.*$", Pattern.CASE_INSENSITIVE),
-		Pattern.compile("^allow:.*$", Pattern.CASE_INSENSITIVE),
-		Pattern.compile("^sitemap:.*$", Pattern.CASE_INSENSITIVE),
-		Pattern.compile("^host:.*$", Pattern.CASE_INSENSITIVE)
+	public static final String BLANK_LINE = "^(\\s*)(#.*)?$";
+	// basic directives
+	public static final String USER_AGENT = "User-agent";
+	public static final String DISALLOW = "Disallow";
+	// nonstandard extensions
+	public static final String CRAWL_DELAY = "Crawl-delay";
+	public static final String ALLOW = "Allow";
+	public static final String SITEMAP = "Sitemap";
+	public static final String HOST = "Host";
+	public static final Set<String> DIRECTIVES = Sets.newHashSet(
+		USER_AGENT, DISALLOW, CRAWL_DELAY, ALLOW, SITEMAP, HOST
 	);
 
+	public static Optional<LineStructure> tryMatchDirective(String directive, String line) {
+		if (line == null) {
+			return Optional.absent();
+		}
 
-	// parse robots.txt from inputstream and return a copied inputstream for further processing
-	public void check (BufferedReader bufferedReader) throws IOException {
-		// test every line
-		String line = "";
-		int lineNumber = 0;
-		while ((line = bufferedReader.readLine()) != null) {
-			lineNumber++;
-			boolean matched = false;
-			for (Pattern pattern : VALID_PATTERNS) {
-				Matcher matcher = pattern.matcher(line);
-				if (matcher.matches()) {
-					matched = true;
-					break;
-				}
+		Pattern pattern = Pattern.compile("^(\\s*)(" + directive + "):(\\s*)([^#]*)(#.*)?$", Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(line);
+		return matcher.matches()
+			? Optional.of(new LineStructure(matcher.group(1), matcher.group(2), matcher.group(3), matcher.group(4), matcher.group(5)))
+			: Optional.<LineStructure>absent();
+	}
+
+	public static Optional<LineStructure> tryMatchDirectives(Set<String> directives, String line) {
+		if (line == null) {
+			return Optional.absent();
+		}
+
+		Pattern pattern = Pattern.compile("^(\\s*)(" + Joiner.on('|').join(directives) + "):(\\s*)([^#]*)(#.*)?$", Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(line);
+		return matcher.matches()
+			? Optional.of(new LineStructure(matcher.group(1), matcher.group(2), matcher.group(3), matcher.group(4), matcher.group(5)))
+			: Optional.<LineStructure>absent();
+
+	}
+
+	public static Optional<LineStructure> tryMatchBlankLine(String line) {
+		if (line == null) {
+			return Optional.absent();
+		}
+
+		Pattern pattern = Pattern.compile(BLANK_LINE);
+		Matcher matcher = pattern.matcher(line);
+		return matcher.matches()
+			? Optional.of(new LineStructure(matcher.group(1), null, null, null, matcher.group(2)))
+			: Optional.<LineStructure>absent();
+	}
+
+	public List<Section> getSections (PushbackBufferedReader pushbackBufferedReader) throws IOException {
+		List<Section> sections = Lists.newLinkedList();
+		while (! pushbackBufferedReader.done()) {
+			Optional<? extends Section> section = UserAgentSection.tryParse(pushbackBufferedReader);
+
+			if (! section.isPresent()) {
+				section = SitemapSection.tryParse(pushbackBufferedReader);
 			}
-			if (!matched) {
-				errorMessage = String.format("Error on line %d: %s", lineNumber, line);
-				break;
+
+			if (! section.isPresent()) {
+				section = InvalidSection.tryParse(pushbackBufferedReader);
+			}
+
+			if (! section.isPresent()) {
+				section = CommentSection.tryParse(pushbackBufferedReader);
+			}
+
+			if (section.isPresent()) {
+				sections.add(section.get());
 			}
 		}
+
+		return sections;
 	}
 
-	public boolean hasError() {
-		return StringUtils.isNotBlank(errorMessage);
-	}
-
-	public String getErrorMessage() {
-		return errorMessage;
-	}
 }

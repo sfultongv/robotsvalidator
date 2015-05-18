@@ -13,6 +13,15 @@
                 padding: 20px;
                 border: 2px solid;
             }
+            .errorLine {
+                background-color: red;
+            }
+            .lines {
+                margin-left: 10px;
+            }
+            .warn {
+                background-color: yellow;
+            }
         </style>
     </head>
     <body>
@@ -20,19 +29,31 @@
         <form method="GET">
             <label for="site">URL for robots.txt</label>
             <input type="text" name="site" id="site" size="70" th:value="${result.site}"/><br/>
-            <label for="agent">agent string</label>
-            <input type="text" name="agent" id="agent" size="70" th:value="${result.agent}"/><br/>
-            <label for="path">path/url to request</label>
-            <input type="text" name="path" id="path" size="70" th:value="${result.path}"/><br/>
             <input type="submit" value="Submit"/>
         </form>
-        <div id="results" th:if="${result.authenticResults}">
-            <h4>Results</h4>
-            From <b th:text="${result.site}">Site</b> as <b th:text="${result.agent}">Agent</b> requesting <b th:text="${result.path}">Path</b><br/>
-            the result is <b th:text="${result.pathAllowed}">Allowed</b>.
-        </div>
-        <div th:if="${result.error}">
-            <b th:text="${result.errorString}">Error</b>
+        <div th:if="${result.real}">
+            <div id="results" th:if="${! result.error}">
+                <h2>Results</h2>
+                <div th:each="section : ${result.sections}">
+                    <h4 th:text="${section.sectionHeading}">Section Heading</h4>
+                    <div class="lines" th:each="line : ${section.lines}">
+                        <div class="normalLine" th:if="${line.valid}">
+                            <span class="leadingSpace" th:text="${line.leadingSpace}"></span>
+                            <span class="directive" th:text="${line.directive}" th:class="${line.directiveInexact} ? 'warn'"></span>
+                            <span class="colon" th:if="${! line.RealDirective}">:</span>
+                            <span class="interstitialSpace" th:text="${line.spaceSection1}"></span>
+                            <span class="value" th:text="${line.value}"></span>
+                            <span class="comment" th:text="${line.comment}"></span>
+                        </div>
+                        <div class="errorLine" th:if="${! line.valid}">
+                            <span class="error" th:text="${line.invalid}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${result.error}">
+                <b th:text="${result.errorString}">Error</b>
+            </div>
         </div>
     </body>
 </html>

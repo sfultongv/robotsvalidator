@@ -2,9 +2,11 @@ package robots.model;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.archive.modules.net.Robotstxt;
 
 /**
  * RobotResults -
@@ -13,74 +15,39 @@ import org.archive.modules.net.Robotstxt;
  */
 public class RobotResults {
 	private final String site;
-	private final String agent;
-	private final String path;
 	private final String errorString;
-	private final boolean allowsPath;
-	private final boolean authenticResults;
+	private final List<Section> sections;
 
 	private RobotResults() {
 		site = "";
-		agent = "";
-		path = "";
 		errorString = "";
-		allowsPath = false;
-		authenticResults = false;
+		sections = Collections.emptyList();
 	}
 
 	public RobotResults(final String error) {
 		site = "";
-		agent = "";
-		path = "";
-		allowsPath = false;
-		authenticResults = false;
 		errorString = error;
+		sections = Collections.emptyList();
 	}
 
-	public RobotResults(final String site, final String agent, final String path, InputStream inputStream) {
+	public RobotResults(final String site, InputStream inputStream) {
 		this.site = site;
-		this.agent = agent;
-		this.path = path;
 		RobotsValidator validator = new RobotsValidator();
 		String errorString = "";
-		boolean allowsPath = false;
-		boolean authenticResults = false;
+		List<Section> sections;
 		try {
-			StreamCloner streamCloner = new StreamCloner(inputStream);
-			validator.check(streamCloner.getNewBufferedReader());
-			errorString = validator.getErrorMessage();
-			if (StringUtils.isBlank(errorString)) {
-				Robotstxt robotstxt = new Robotstxt(streamCloner.getNewBufferedReader());
-				allowsPath = robotstxt.getDirectivesFor(agent).allows(path);
-				authenticResults = true;
-			}
+			PushbackBufferedReader pushbackBufferedReader = new PushbackBufferedReader(new InputStreamReader(inputStream));
+			sections = validator.getSections(pushbackBufferedReader);
 		} catch (IOException e) {
 			errorString = e.getMessage();
-			authenticResults = false;
+			sections = Collections.emptyList();
 		}
 		this.errorString = errorString;
-		this.allowsPath = allowsPath;
-		this.authenticResults = authenticResults;
+		this.sections = sections;
 	}
 
 	public String getSite() {
 		return site;
-	}
-
-	public String getAgent() {
-		return agent;
-	}
-
-	public String getPath() {
-		return path;
-	}
-
-	public boolean isAuthenticResults() {
-		return authenticResults;
-	}
-
-	public String getPathAllowed() {
-		return  allowsPath ? "allowed" : "disallowed";
 	}
 
 	public String getErrorString() {
@@ -93,6 +60,14 @@ public class RobotResults {
 
 	public boolean isError() {
 		return hasError();
+	}
+
+	public List<Section> getSections() {
+		return sections;
+	}
+
+	public boolean isReal() {
+		return this != NO_RESULTS;
 	}
 
 	public static RobotResults NO_RESULTS = new RobotResults();
