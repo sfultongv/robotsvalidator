@@ -22,6 +22,28 @@
             .warn {
                 background-color: yellow;
             }
+            .spacer {
+                margin: 5px;
+            }
+            a.tooltip {outline:none; }
+            a.tooltip strong {line-height:30px;}
+            a.tooltip:hover {text-decoration:none;}
+            a.tooltip span {
+                z-index:10;display:none; padding:14px 20px;
+                margin-top:-30px; margin-left:28px;
+                width:300px; line-height:16px;
+            }
+            a.tooltip:hover span{
+                display:inline; position:absolute; color:#111;
+                border:1px solid #DCA; background:#fffAF0;}
+            .callout {z-index:20;position:absolute;top:30px;border:0;left:-12px;}
+
+            /*CSS3 extras*/
+            a.tooltip span
+            {
+                border-radius:4px;
+                box-shadow: 5px 5px 8px #CCC;
+            }
         </style>
     </head>
     <body>
@@ -38,17 +60,22 @@
                     <h4 th:text="${section.sectionHeading}">Section Heading</h4>
                     <div class="lines" th:each="line : ${section.lines}">
                         <div class="normalLine" th:if="${line.valid}">
-                            <span class="leadingSpace" th:text="${line.leadingSpace}"></span>
-                            <span class="directive" th:text="${line.directive}" th:class="${line.directiveInexact} ? 'warn'"></span>
-                            <span class="colon" th:if="${! line.RealDirective}">:</span>
-                            <span class="interstitialSpace" th:text="${line.spaceSection1}"></span>
-                            <span class="value" th:text="${line.value}"></span>
-                            <span class="comment" th:text="${line.comment}"></span>
+                            <span class="fragment" th:each="fragment : ${line.fragments}">
+                                <span th:if="${! fragment.suggesting}" th:text="${fragment.fragment}"></span>
+                                <a th:if="${fragment.suggesting}" href="#" class="tooltip warn">
+                                    <u th:text="${fragment.fragment}"></u>
+                                    <span th:text="${fragment.suggestion}"></span>
+                                </a>
+                            </span>
                         </div>
                         <div class="errorLine" th:if="${! line.valid}">
                             <span class="error" th:text="${line.invalid}"></span>
                         </div>
                     </div>
+                </div>
+                <div class="spacer"></div>
+                <div class="warn" th:if="${result.starUserAgentNotLast}">
+                    WARNING: The block of code addressed to all spiders (User-agent: *) is not the last one. We advise you to move it at the bottom of the robots.txt file, to reduce interpretation problems with some old robots.
                 </div>
             </div>
             <div th:if="${result.error}">

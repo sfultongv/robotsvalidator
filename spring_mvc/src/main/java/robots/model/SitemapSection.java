@@ -76,4 +76,9 @@ public class SitemapSection implements Section {
 	public String getSectionHeading() {
 		return "Miscellaneous Properties Section";
 	}
+
+	@Override
+	public SectionType getSectionType() {
+		return SectionType.Sitemap;
+	}
 }

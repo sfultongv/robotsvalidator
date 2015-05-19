@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -68,6 +70,32 @@ public class RobotResults {
 
 	public boolean isReal() {
 		return this != NO_RESULTS;
+	}
+
+	public class SectionCaster<T extends Section> implements Function<Section, T> {
+		@Override
+		public T apply(final Section section) {
+			return (T) section;
+		}
+	}
+
+	public boolean isStarUserAgentNotLast() {
+		List<UserAgentSection> onlyUserAgentSections =
+		FluentIterable.from(sections)
+			.filter(UserAgentSection.IS_USER_AGENT)
+			.transform(new SectionCaster<UserAgentSection>())
+			.toList();
+
+		boolean foundStarAgent = false;
+		for (UserAgentSection userAgentSection : onlyUserAgentSections) {
+			if ("*".equals(userAgentSection.getUserAgent())) {
+				foundStarAgent = true;
+			} else if (foundStarAgent) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static RobotResults NO_RESULTS = new RobotResults();

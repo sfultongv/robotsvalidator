@@ -1,22 +1,26 @@
 package robots.model;
 
+import java.util.List;
+
+import com.google.common.collect.Lists;
+
 /**
  * LineStructure -
  *
  * @author Sam Griffin
  */
 public class LineStructure {
-	final String leadingSpace;
-	final String directive;
-	final String spaceSection1;
-	final String value;
-	final String comment;
+	final LineFragment leadingSpace;
+	final LineFragment directive;
+	final LineFragment colonSpace;
+	final LineFragment value;
+	final LineFragment comment;
 	final String invalid;
 
-	public LineStructure(final String leadingSpace, final String directive, final String spaceSection1, final String value, final String comment) {
+	public LineStructure(final LineFragment leadingSpace, final LineFragment directive, final LineFragment colonSpace, final LineFragment value, final LineFragment comment) {
 		this.leadingSpace = leadingSpace;
 		this.directive = directive;
-		this.spaceSection1 = spaceSection1;
+		this.colonSpace = colonSpace;
 		this.value = value;
 		this.comment = comment;
 		invalid = null;
@@ -26,29 +30,29 @@ public class LineStructure {
 		this.invalid = invalid;
 		leadingSpace = null;
 		directive = null;
-		spaceSection1 = null;
+		colonSpace = null;
 		value = null;
 		comment = null;
 	}
 
 	public String getLeadingSpace() {
-		return leadingSpace;
+		return leadingSpace.getFragment();
 	}
 
 	public String getDirective() {
-		return directive;
+		return directive.getFragment();
 	}
 
 	public String getSpaceSection1() {
-		return spaceSection1;
+		return colonSpace.getFragment();
 	}
 
 	public String getValue() {
-		return value;
+		return value.getFragment();
 	}
 
 	public String getComment() {
-		return comment;
+		return comment.getFragment();
 	}
 
 	public String getInvalid() {
@@ -60,11 +64,16 @@ public class LineStructure {
 	}
 
 	public boolean isRealDirective() {
-		return directive != null;
+		return getDirective() != null;
 	}
 
+	public List<LineFragment> getFragments () {
+		return Lists.asList(leadingSpace, new LineFragment[] {directive, colonSpace, value, comment});
+	}
+
+	// get rid of this!!
 	// if the directive's capitalization does not match the standard directly, warn
 	public boolean isDirectiveInexact() {
-		return ! RobotsValidator.DIRECTIVES.contains(directive);
+		return ! RobotsValidator.DIRECTIVES.contains(getDirective());
 	}
 }

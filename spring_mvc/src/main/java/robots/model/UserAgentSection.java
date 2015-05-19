@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -15,6 +16,12 @@ import com.google.common.collect.Sets;
  * @author Sam Griffin
  */
 public class UserAgentSection implements Section {
+	public static final Predicate<Section> IS_USER_AGENT = new Predicate<Section>() {
+		@Override
+		public boolean apply(final Section section) {
+			return section.getSectionType().equals(SectionType.UserAgent);
+		}
+	};
 	final List<LineStructure> structures;
 	final String userAgent;
 
@@ -74,5 +81,14 @@ public class UserAgentSection implements Section {
 	@Override
 	public String getSectionHeading() {
 		return "User Agent Section for: " + userAgent;
+	}
+
+	@Override
+	public SectionType getSectionType() {
+		return SectionType.UserAgent;
+	}
+
+	public String getUserAgent() {
+		return userAgent;
 	}
 }

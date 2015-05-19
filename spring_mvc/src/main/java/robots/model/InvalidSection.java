@@ -64,4 +64,9 @@ public class InvalidSection implements Section {
 	public String getSectionHeading() {
 		return "Invalid Section";
 	}
+
+	@Override
+	public SectionType getSectionType() {
+		return SectionType.Invalid;
+	}
 }

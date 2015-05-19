@@ -11,5 +11,6 @@ public interface Section {
 
 	List<LineStructure> getLines();
 	String getSectionHeading();
+	SectionType getSectionType();
 
 }

@@ -59,4 +59,9 @@ public class CommentSection implements Section {
 	public String getSectionHeading() {
 		return "Comments Section";
 	}
+
+	@Override
+	public SectionType getSectionType() {
+		return SectionType.Comment;
+	}
 }
